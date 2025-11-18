@@ -3,19 +3,49 @@ import { useForm } from 'react-hook-form';
 import useAuth from '../../../Hooks/useAuth';
 import { Link } from 'react-router';
 import SocialLogin from '../SocialLogin/SocialLogin';
+import axios from 'axios';
 
 const Register = () => {
 
     const { register, handleSubmit, formState: { errors } } = useForm();
-    const { registerUser } = useAuth();
+    const { registerUser, updateUserProfile } = useAuth();
 
-    
+
 
 
     const handleRegistration = (data) => {
+
+        const profileImg = data.photo[0];
         registerUser(data.email, data.password)
-            .then(res => { console.log(res) })
+            .then(res => {
+                console.log(res)
+                // store the image and get the URL
+                const formData = new FormData();
+
+                formData.append('image', profileImg);
+                const imageApI = `https://api.imgbb.com/1/upload?expiration=600&key=${import.meta.env.VITE_image_hosting_key}`
+
+
+                axios.post(imageApI, formData)
+                    .then(res => {
+
+                        console.log("after image upload", res.data.data.display_url);
+                        //update user profile here
+                        const userProfile = {
+
+                            displayName: data.name,
+                            photoURL: res.data.data.display_url,
+
+                        }
+                        updateUserProfile(userProfile)
+                        .then(res => { console.log(res) })
+
+                    })
+                //update user profile here 
+
+            })
             .catch(err => { console.log(err) })
+
     };
 
     return (
@@ -35,6 +65,20 @@ const Register = () => {
                     {
                         errors.name?.type === 'required' && (
                             <p className="text-red-500 text-sm">Name is required</p>)
+                    }
+                    {/* Image field */}
+
+                    <label className="label">Photo</label>
+
+                    <input
+                        type="file"
+                        {...register('photo', { required: true })}
+                        className="file-input w-full"
+                        placeholder="your photo"
+                    />
+                    {
+                        errors.photo?.type === 'required' && (
+                            <p className="text-red-500 text-sm">Photo is required</p>)
                     }
 
 
