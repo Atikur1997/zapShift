@@ -15,6 +15,7 @@ const NavBar = () => {
     const links = <>
         <li><NavLink to=''>services</NavLink></li>
         <li><NavLink to=''>About Us</NavLink></li>
+        <li><NavLink to='/sendparcel'>Send Parcel</NavLink></li>
         <li><NavLink to='/coverage'>Coverage</NavLink></li>
 
     </>
@@ -34,7 +35,7 @@ const NavBar = () => {
                             }
                         </ul>
                     </div>
-                    <a className="btn btn-ghost text-xl"><Logo></Logo></a>
+                    <NavLink  className="btn btn-ghost text-xl cursor-pointer"><Logo></Logo></NavLink>
                 </div>
                 <div className="navbar-center hidden lg:flex">
                     <ul className="menu menu-horizontal px-1">
@@ -47,8 +48,9 @@ const NavBar = () => {
                     {
                         user ? <a onClick={handleLogOut} className="btn btn-outline text-secondary hover:bg-primary">Log Out </a> : <Link to='/login' className="btn btn-outline text-secondary">Login </Link>
                     }
+
                     <Link
-                        to='/'
+                        to='/rider'
                         className="btn btn-primary text-secondary ml-4">Be a Rider </Link>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import useAuth from '../../../Hooks/useAuth';
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import SocialLogin from '../SocialLogin/SocialLogin';
 import axios from 'axios';
 
@@ -9,6 +9,8 @@ const Register = () => {
 
     const { register, handleSubmit, formState: { errors } } = useForm();
     const { registerUser, updateUserProfile } = useAuth();
+    const location = useLocation();
+
 
 
 
@@ -38,7 +40,7 @@ const Register = () => {
 
                         }
                         updateUserProfile(userProfile)
-                        .then(res => { console.log(res) })
+                            .then(res => { console.log(res) })
 
                     })
                 //update user profile here 
@@ -119,7 +121,9 @@ const Register = () => {
                     <button className="btn btn-neutral mt-4">Register</button>
                 </fieldset>
                 <p className=' mt-4'>Already have an account ?
-                    <Link to='/login' className='text-secondary underline font-bold'>Login  here!!!</Link>
+                    <Link state={location.state}
+                        to='/login'
+                        className='text-secondary underline font-bold'>Login  here!!!</Link>
                 </p>
             </form>
             <SocialLogin></SocialLogin>

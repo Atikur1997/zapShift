@@ -1,11 +1,11 @@
 import React from 'react';
 
-const Rider = () => {
+const SendPercel = () => {
     return (
         <div>
-
+            
         </div>
     );
 };
 
-export default Rider;
+export default SendPercel;

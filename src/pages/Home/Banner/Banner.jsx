@@ -21,7 +21,7 @@ const Banner = () => {
 
                     />
                     <div className=' relative -top-[100px] -left-[500px]'>
-                        <button className='btn btn-primary text-secondary'>pick your percel</button>
+                        <button className='btn btn-primary text-secondary'>pick your parcel</button>
 
                         <button className='btn bg-transparent text-secondary'>Be a Rider</button>
                     </div>

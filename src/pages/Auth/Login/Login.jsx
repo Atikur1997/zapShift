@@ -1,15 +1,22 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import useAuth from '../../../Hooks/useAuth';
-import { Link } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import SocialLogin from '../SocialLogin/SocialLogin';
 
 const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm()
     const { signInUser } = useAuth()
+
+    const location = useLocation()
+    const navigate = useNavigate()
+
     const handleLogin = (data) => {
         signInUser(data.email, data.password)
-            .then(result => console.log(result))
+            .then(result => {
+                console.log(result)
+                navigate(location?.state || '/')
+            })
             .catch((error) => {
                 console.log(error);
             })
@@ -60,7 +67,9 @@ const Login = () => {
 
                 </fieldset>
                 <p className=' mt-4'>New to ZapShift ?
-                    <Link to='/register' className='text-secondary underline font-bold'>Register here!!!</Link>
+                    <Link to='/register'
+                        state={location.state}
+                        className='text-secondary underline font-bold'>Register here!!!</Link>
                 </p>
             </form>
             <SocialLogin></SocialLogin>
