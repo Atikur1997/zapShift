@@ -25,8 +25,12 @@ export const router = createBrowserRouter([
                 Component: Coverage,
             },
             {
-
-            }
+                path: "/sendparcel",
+                element: <Privateroutes>
+                    <SendPercel></SendPercel>
+                </Privateroutes>
+            },
+            
         ]
     },
     {
@@ -47,12 +51,7 @@ export const router = createBrowserRouter([
                     <Rider></Rider>
                 </Privateroutes>
             },
-            {
-                path: "/sendparcel",
-                element: <Privateroutes>
-                    <SendPercel></SendPercel>
-                </Privateroutes>
-            }
+
         ]
     }
 ]);
