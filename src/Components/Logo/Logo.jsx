@@ -6,7 +6,7 @@ const Logo = () => {
         <NavLink to={'/'}>
             <div className='flex items-end'>
                 <img src={logo} alt="" />
-                <h3 className='text-3xl font-bold -ms-2 text-secondary'>ZapShift</h3>
+                <h3 className='text-lg md:text-3xl font-bold -ms-2 text-secondary'>ZapShift</h3>
             </div>
         </NavLink>
     );
