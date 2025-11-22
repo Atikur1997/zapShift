@@ -2,19 +2,21 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { useLoaderData } from "react-router";
 import Swal from "sweetalert2";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
+import useAuth from "../../Hooks/useAuth";
 
-const SendPercel = () => {
+const SendParcel = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
     watch,
+    // formState: { errors },
   } = useForm();
-
+  const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
   const serviceCenters = useLoaderData();
 
   const regions = [...new Set(serviceCenters.map((c) => c.region))];
-
   const senderRegion = watch("senderRegion");
   const receiverRegion = watch("receiverRegion");
 
@@ -25,19 +27,14 @@ const SendPercel = () => {
   };
 
   const handleSendParcel = (data) => {
-    console.log("FORM DATA:", data);
-
     const isSameDistrict = data.senderDistrict === data.receiverDistrict;
     const isDocument = data.parcelType === "document";
     const parcelWeight = parseFloat(data.parcelWeight);
-
     let cost = 0;
 
     if (isDocument) {
-      // Document cost
       cost = isSameDistrict ? 60 : 80;
     } else {
-      // Non-document
       if (parcelWeight < 3) {
         cost = isSameDistrict ? 110 : 150;
       } else {
@@ -46,12 +43,9 @@ const SendPercel = () => {
         const extraCharge = isSameDistrict
           ? extraWeight * 40
           : extraWeight * 40 + 40;
-
         cost = baseCharge + extraCharge;
       }
     }
-
-    console.log("TOTAL COST:", cost);
 
     Swal.fire({
       title: "Agree with the Cost?",
@@ -60,15 +54,13 @@ const SendPercel = () => {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, take it!",
+      confirmButtonText: "I agree!",
     }).then((result) => {
       if (result.isConfirmed) {
-        Swal.fire({
-
-          
-          // title: "Deleted!",
-          // text: "Your file has been deleted.",
-          // icon: "success",
+        axiosSecure.post("/parcels", data).then((res) => {
+          if (res.data.insertedId) {
+            Swal.fire("Success!", "Parcel sent successfully.", "success");
+          }
         });
       }
     });
@@ -77,7 +69,6 @@ const SendPercel = () => {
   return (
     <div className="mt-5">
       <h2 className="text-5xl font-bold text-secondary">Send a Parcel</h2>
-
       <form onSubmit={handleSubmit(handleSendParcel)}>
         {/* PARCEL TYPE */}
         <div className="mt-12 p-4">
@@ -90,7 +81,6 @@ const SendPercel = () => {
             />
             Document
           </label>
-
           <label className="label">
             <input
               type="radio"
@@ -113,7 +103,6 @@ const SendPercel = () => {
               placeholder="Parcel name"
             />
           </fieldset>
-
           <fieldset className="fieldset">
             <label className="label">Parcel Weight (kg):</label>
             <input
@@ -132,11 +121,11 @@ const SendPercel = () => {
             <h4 className="text-2xl font-semibold text-secondary">
               Sender Details
             </h4>
-
             <fieldset className="fieldset">
               <label className="label">Sender's Name:</label>
               <input
                 type="text"
+                defaultValue={user?.displayName}
                 {...register("senderName")}
                 className="input w-full"
                 placeholder="Sender name"
@@ -145,6 +134,7 @@ const SendPercel = () => {
               <label className="label">Sender's Email:</label>
               <input
                 type="email"
+                defaultValue={user?.email}
                 {...register("senderEmail")}
                 className="input w-full"
                 placeholder="Sender email"
@@ -217,7 +207,6 @@ const SendPercel = () => {
             <h4 className="text-2xl font-semibold text-secondary">
               Receiver Details
             </h4>
-
             <fieldset className="fieldset">
               <label className="label">Receiver's Name:</label>
               <input
@@ -309,4 +298,4 @@ const SendPercel = () => {
   );
 };
 
-export default SendPercel;
+export default SendParcel;
