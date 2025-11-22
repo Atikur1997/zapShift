@@ -4,32 +4,32 @@ import useAuth from '../../../Hooks/useAuth';
 import { Link, useLocation, useNavigate } from 'react-router';
 import SocialLogin from '../SocialLogin/SocialLogin';
 
-const Login = () => {
-    const { register, handleSubmit, formState: { errors } } = useForm()
-    const { signInUser } = useAuth()
 
-    const location = useLocation()
-    const navigate = useNavigate()
+const Login = () => {
+    const { register, handleSubmit, formState: { errors } } = useForm();
+    const { signInUser } = useAuth();
+
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const handleLogin = (data) => {
         signInUser(data.email, data.password)
-            .then(result => {
-                console.log(result)
-                navigate(location?.state || '/')
+            .then(() => {
+                const redirectPath = location.state?.from?.pathname || '/';
+                navigate(redirectPath);
             })
-            .catch((error) => {
-                console.log(error);
-            })
-    }
+            .catch(error => console.log(error));
+    };
 
     return (
-        <div className=''>
-            <h2 className='text-3xl  text-secondary font-semibold'>Welcome to ZapShift!</h2>
+        <div>
+            <h2 className='text-3xl text-secondary font-semibold'>Welcome to ZapShift!</h2>
             <p>Login with ZapShift</p>
+
             <form onSubmit={handleSubmit(handleLogin)}>
                 <fieldset className="fieldset">
 
-                    {/* Email field */}
+                    {/* Email */}
                     <label className="label">Email</label>
                     <input
                         type="email"
@@ -37,18 +37,13 @@ const Login = () => {
                         className="input w-full"
                         placeholder="Email"
                     />
-                    {errors.email?.type === 'required' && (
-                        <p className="text-red-500 text-sm">Email is required</p>
-                    )}
+                    {errors.email && <p className="text-red-500 text-sm">Email is required</p>}
 
-                    {/* Password field */}
+                    {/* Password */}
                     <label className="label">Password</label>
                     <input
                         type="password"
-                        {...register('password', {
-                            required: true,
-                            minLength: 6,
-                        })}
+                        {...register('password', { required: true, minLength: 6 })}
                         className="input w-full"
                         placeholder="Password"
                     />
@@ -56,23 +51,32 @@ const Login = () => {
                         <p className="text-red-500 text-sm">Password is required</p>
                     )}
                     {errors.password?.type === 'minLength' && (
-                        <p className="text-red-500 text-sm">Min length is 6</p>
+                        <p className="text-red-500 text-sm">Minimum length is 6</p>
                     )}
 
                     <div>
                         <a className="link link-hover">Forgot password?</a>
                     </div>
 
-                    <button className="btn bg-primary text-secondary mt-4">Login</button>
-
+                    {/* FIXED BUTTON */}
+                    <button type="submit" className="btn bg-primary text-secondary mt-4">
+                        Login
+                    </button>
                 </fieldset>
-                <p className=' mt-4'>New to ZapShift ?
-                    <Link to='/register'
+
+                <p className='mt-4'>
+                    New to ZapShift?
+                    <Link
+                        to='/register'
                         state={location.state}
-                        className='text-secondary underline font-bold'>Register here!!!</Link>
+                        className='text-secondary underline font-bold'
+                    >
+                        Register here!!!
+                    </Link>
                 </p>
             </form>
-            <SocialLogin></SocialLogin>
+
+            <SocialLogin />
         </div>
     );
 };

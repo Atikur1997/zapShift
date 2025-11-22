@@ -1,6 +1,7 @@
 import React from 'react';
 import logo from '../../assets/logo.png'
 import { NavLink } from 'react-router';
+
 const Logo = () => {
     return (
         <NavLink to={'/'}>

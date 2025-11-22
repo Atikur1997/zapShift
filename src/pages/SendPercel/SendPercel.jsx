@@ -1,6 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useLoaderData } from "react-router";
+import Swal from "sweetalert2";
 
 const SendPercel = () => {
   const {
@@ -11,33 +12,74 @@ const SendPercel = () => {
   } = useForm();
 
   const serviceCenters = useLoaderData();
-//   console.log(serviceCenters);
-  const regionsDuplicate = serviceCenters.map(c=> c.region)
- 
-  const newRegions = [...new Set(regionsDuplicate)]
-  console.log(newRegions);
 
-  const senderRegion = watch('senderRegion')
-  const receiverRegion =watch('receiverRegion')
+  const regions = [...new Set(serviceCenters.map((c) => c.region))];
 
-  const districtByRegion = region =>{
-    const regionDistrict = serviceCenters.filter(d => d.region === region)
+  const senderRegion = watch("senderRegion");
+  const receiverRegion = watch("receiverRegion");
 
-    const districts = regionDistrict.map (dis => dis.district)
-    return districts
+  const getDistrictsByRegion = (region) => {
+    if (!region) return [];
+    const filtered = serviceCenters.filter((item) => item.region === region);
+    return [...new Set(filtered.map((i) => i.district))];
+  };
 
-  }
+  const handleSendParcel = (data) => {
+    console.log("FORM DATA:", data);
 
-  const handleSendPArcel = (data) => {
-    console.log(data);
+    const isSameDistrict = data.senderDistrict === data.receiverDistrict;
+    const isDocument = data.parcelType === "document";
+    const parcelWeight = parseFloat(data.parcelWeight);
+
+    let cost = 0;
+
+    if (isDocument) {
+      // Document cost
+      cost = isSameDistrict ? 60 : 80;
+    } else {
+      // Non-document
+      if (parcelWeight < 3) {
+        cost = isSameDistrict ? 110 : 150;
+      } else {
+        const baseCharge = isSameDistrict ? 110 : 150;
+        const extraWeight = parcelWeight - 3;
+        const extraCharge = isSameDistrict
+          ? extraWeight * 40
+          : extraWeight * 40 + 40;
+
+        cost = baseCharge + extraCharge;
+      }
+    }
+
+    console.log("TOTAL COST:", cost);
+
+    Swal.fire({
+      title: "Agree with the Cost?",
+      text: `You will be charged ${cost}`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, take it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+
+          
+          // title: "Deleted!",
+          // text: "Your file has been deleted.",
+          // icon: "success",
+        });
+      }
+    });
   };
 
   return (
     <div className="mt-5">
       <h2 className="text-5xl font-bold text-secondary">Send a Parcel</h2>
-      <p></p>
-      <form onSubmit={handleSubmit(handleSendPArcel)}>
-        {/* document */}
+
+      <form onSubmit={handleSubmit(handleSendParcel)}>
+        {/* PARCEL TYPE */}
         <div className="mt-12 p-4">
           <label className="label mr-44">
             <input
@@ -48,201 +90,207 @@ const SendPercel = () => {
             />
             Document
           </label>
+
           <label className="label">
             <input
               type="radio"
-              value="Non-document"
+              value="non-document"
               {...register("parcelType")}
               className="radio radio-success"
             />
             Non-Document
           </label>
         </div>
-        {/* parcel info: name , weight */}
 
+        {/* PARCEL NAME & WEIGHT */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <fieldset className="fieldset">
             <label className="label">Parcel Name:</label>
             <input
               type="text"
-              className="input w-full focus:outline-none"
+              className="input w-full"
               {...register("parcelName")}
-              placeholder="parcel name"
+              placeholder="Parcel name"
             />
           </fieldset>
 
-          {/* parcel Weight  */}
           <fieldset className="fieldset">
-            <label className="label">Parcel weigth (kg):</label>
+            <label className="label">Parcel Weight (kg):</label>
             <input
               type="number"
-              className="input w-full focus:outline-none"
+              className="input w-full"
               {...register("parcelWeight")}
-              placeholder="parcel weight"
+              placeholder="Parcel weight"
             />
           </fieldset>
         </div>
 
-        {/* sender receiver info: name , phone , address */}
-
+        {/* SENDER & RECEIVER */}
         <div className="my-10 grid grid-cols-1 md:grid-cols-2 gap-12">
+          {/* SENDER DETAILS */}
           <div>
-            {/* sender info  */}
             <h4 className="text-2xl font-semibold text-secondary">
               Sender Details
             </h4>
 
-            {/* Senders Name */}
             <fieldset className="fieldset">
               <label className="label">Sender's Name:</label>
               <input
                 type="text"
-                className="input w-full focus:outline-none"
                 {...register("senderName")}
-                placeholder="Sender's name"
+                className="input w-full"
+                placeholder="Sender name"
               />
 
-              {/*sender Emanil  */}
-              <label className="label">Receiver's Email:</label>
+              <label className="label">Sender's Email:</label>
               <input
-                type="Email"
-                className="input w-full focus:outline-none"
-                {...register("senderName")}
-                placeholder="Sender's name"
+                type="email"
+                {...register("senderEmail")}
+                className="input w-full"
+                placeholder="Sender email"
               />
 
-              {/* Sender's region */}
               <fieldset className="fieldset">
                 <legend className="fieldset-legend">Sender's Region</legend>
-                <select {...register("senderRegion") } defaultValue="Pick a Region" className="select w-full">
-                  <option disabled={true}>Pick a Region</option>
-                 {
-                     newRegions.map((r,i)=> <option key={i} value={r}>{r}</option>)
-                 }
-                 
+                <select
+                  {...register("senderRegion")}
+                  defaultValue=""
+                  className="select w-full"
+                >
+                  <option value="" disabled>
+                    Pick a Region
+                  </option>
+                  {regions.map((r, i) => (
+                    <option key={i} value={r}>
+                      {r}
+                    </option>
+                  ))}
                 </select>
-               
               </fieldset>
 
-                   {/* Sender's Districts */}
               <fieldset className="fieldset">
                 <legend className="fieldset-legend">Sender's District</legend>
-                <select {...register("senderDistrict") } defaultValue="Pick a Region" className="select w-full">
-                  <option disabled={true}>Pick a District</option>
-                 {
-                     districtByRegion(senderRegion).map((r,i)=> <option key={i} value={r}>{r}</option>)
-                 }
-                 
+                <select
+                  {...register("senderDistrict")}
+                  defaultValue=""
+                  className="select w-full"
+                >
+                  <option value="" disabled>
+                    Pick a District
+                  </option>
+                  {getDistrictsByRegion(senderRegion).map((d, i) => (
+                    <option key={i} value={d}>
+                      {d}
+                    </option>
+                  ))}
                 </select>
-               
               </fieldset>
 
-              
-
-              {/* sender address */}
               <label className="label">Sender's Address:</label>
               <input
                 type="text"
-                className="input w-full focus:outline-none"
                 {...register("senderAddress")}
-                placeholder="sender address"
+                className="input w-full"
+                placeholder="Sender address"
               />
 
-              {/* sender phone */}
               <label className="label">Sender's Phone:</label>
               <input
                 type="text"
-                className="input w-full focus:outline-none"
                 {...register("senderPhone")}
-                placeholder="sender phone"
+                className="input w-full"
+                placeholder="Sender phone"
               />
 
-              {/* sender's Instruction */}
               <label className="label">Sender's Instruction:</label>
               <textarea
-                className="textarea textarea-bordered w-full focus:outline-none"
                 {...register("senderInstruction")}
+                className="textarea textarea-bordered w-full"
                 placeholder="Write your instruction here"
                 rows={4}
               />
             </fieldset>
           </div>
 
+          {/* RECEIVER DETAILS */}
           <div>
-            {/* reciver info */}
-
-            {/*Receiver name  */}
             <h4 className="text-2xl font-semibold text-secondary">
               Receiver Details
             </h4>
+
             <fieldset className="fieldset">
               <label className="label">Receiver's Name:</label>
               <input
                 type="text"
-                className="input w-full focus:outline-none"
-                {...register("senderName")}
-                placeholder="Receiver's name"
+                {...register("receiverName")}
+                className="input w-full"
+                placeholder="Receiver name"
               />
 
-              {/*Receiver Emanil  */}
               <label className="label">Receiver's Email:</label>
               <input
-                type="Email"
-                className="input w-full focus:outline-none"
-                {...register("senderName")}
-                placeholder="Receiver's Email"
+                type="email"
+                {...register("receiverEmail")}
+                className="input w-full"
+                placeholder="Receiver email"
               />
-               {/* Receiver's region */}
+
               <fieldset className="fieldset">
-                <legend className="fieldset-legend">Sender's Region</legend>
-                <select {...register("receiverRegion") } defaultValue="Pick a Region" className="select w-full">
-                  <option disabled={true}>Pick a Region</option>
-                 {
-                     newRegions.map((r,i)=> <option key={i} value={r}>{r}</option>)
-                 }
-                 
+                <legend className="fieldset-legend">Receiver's Region</legend>
+                <select
+                  {...register("receiverRegion")}
+                  defaultValue=""
+                  className="select w-full"
+                >
+                  <option value="" disabled>
+                    Pick a Region
+                  </option>
+                  {regions.map((r, i) => (
+                    <option key={i} value={r}>
+                      {r}
+                    </option>
+                  ))}
                 </select>
-               
               </fieldset>
 
-                   {/* Receiver's Districts */}
               <fieldset className="fieldset">
-                <legend className="fieldset-legend">Sender's District</legend>
-                <select {...register("receiverDistrict") } defaultValue="Pick a Region" className="select w-full">
-                  <option disabled={true}>Pick a District</option>
-                 {
-                     districtByRegion(receiverRegion).map((r,i)=> <option key={i} value={r}>{r}</option>)
-                 }
-                 
+                <legend className="fieldset-legend">Receiver's District</legend>
+                <select
+                  {...register("receiverDistrict")}
+                  defaultValue=""
+                  className="select w-full"
+                >
+                  <option value="" disabled>
+                    Pick a District
+                  </option>
+                  {getDistrictsByRegion(receiverRegion).map((d, i) => (
+                    <option key={i} value={d}>
+                      {d}
+                    </option>
+                  ))}
                 </select>
-               
               </fieldset>
 
-              {/* Receiver address */}
               <label className="label">Receiver's Address:</label>
               <input
                 type="text"
-                className="input w-full focus:outline-none"
                 {...register("receiverAddress")}
+                className="input w-full"
                 placeholder="Receiver address"
               />
 
-              {/* Receiver phone */}
               <label className="label">Receiver's Phone:</label>
               <input
                 type="text"
-                className="input w-full focus:outline-none"
                 {...register("receiverPhone")}
+                className="input w-full"
                 placeholder="Receiver phone"
               />
 
-           
-
-              {/* Receiver's Instruction */}
               <label className="label">Receiver's Instruction:</label>
               <textarea
-                className="textarea textarea-bordered w-full focus:outline-none"
                 {...register("receiverInstruction")}
+                className="textarea textarea-bordered w-full"
                 placeholder="Write your instruction here"
                 rows={4}
               />
@@ -250,9 +298,10 @@ const SendPercel = () => {
           </div>
         </div>
 
+        {/* SUBMIT */}
         <input
           type="submit"
-          className="btn btn-primary text-secondary "
+          className="btn btn-primary text-secondary"
           value="Submit Now"
         />
       </form>
